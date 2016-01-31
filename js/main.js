@@ -1,4 +1,3 @@
-
 function parseConferenceList(response) {
     var $html = $(response);
 
@@ -83,20 +82,32 @@ function formatDate(date) {
 
 
 $(function() {
+    var venue_prefix = $('.map').attr('data-venue-prefix') || '';
     $('.map li').each(function() {
         var $city = $(this);
 
         var url = $('.lanyrd_link', $city).attr('href');
         scrape(url, function (data) {
             if (data.date) {
-                // console.log(data);
                 $('h3 a', $city).attr('href', data.url);
                 $('.date', $city).text(formatDate(data.date));
-                $('.venue', $city).replaceWith($('<a>', {
-                    'href': data.map,
-                    'class': 'venue',
-                    'text': data.venue
-                }));
+                $('.venue', $city).replaceWith(
+                    $('<span>', {
+                        text: venue_prefix + ' ',
+                        class: 'venue'
+                    }).append($('<a>', {
+                        'href': data.map,
+                        'text': data.venue
+                    }))
+                );
+
+                var mdate = new Date(Date.parse(data.date));
+                var today = new Date();
+                if (mdate.toDateString() == today.toDateString()) {
+                    $city.addClass('now');
+                } else if (mdate < today) {
+                    $city.addClass('in-past');
+                }
             }
         });
     });
